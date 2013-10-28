@@ -1,4 +1,4 @@
-html, body {
+/*html, body {
 	height: 100%;
 }
 
@@ -16,10 +16,10 @@ html, body {
 	bottom: 0;
 	left: 15px;
 	right: 15px;
-}
+}*/
 
 .feedcolumn {
-	height: 100%;
+	min-height: 100px;
 }
 
 .container {
@@ -41,9 +41,9 @@ ul {
 	margin-bottom: 20px;
 }
 
-.over > *, .drag > * {
+/*.over > *, .drag > * {
 	pointer-events: none;
-}
+}*/
 
 /*div.panel {
 	pointer-events: none;
