@@ -1,0 +1,55 @@
+html, body {
+	height: 100%;
+}
+
+.feeedreader {
+	height: 100%;
+}
+
+.toolbar {
+	height: auto;
+}
+
+.feeds {
+	position: absolute;
+	top: 94px;
+	bottom: 0;
+	left: 15px;
+	right: 15px;
+}
+
+.feedcolumn {
+	height: 100%;
+}
+
+.container {
+	max-width: none;
+}
+
+ul {
+	padding-left: 10px;
+	/*list-style: none;*/
+}
+
+.navbar {
+	border-radius: 0;
+}
+
+.dropSpacer {
+	height: 150px;
+	border: 5px dashed blue;
+	margin-bottom: 20px;
+}
+
+.over > *, .drag > * {
+	pointer-events: none;
+}
+
+/*div.panel {
+	pointer-events: none;
+}
+*/
+
+/*.jack {
+	border: 5px solid red;
+}*/

@@ -1,0 +1,15 @@
+<div class='feed'>
+  <div class="panel panel-info">
+    <div class="panel-heading">
+    	<a ng-href='{{feeddata.link}}'>{{feeddata.title}}&nbsp;{{myIdx}}</a>
+    	<button class='pull-right' ng-click='DeleteFeed(feed)'>X</Button>
+    </div>
+    <div class="panel-body">
+     		<ul>
+  			<li ng-repeat='entry in feeddata.entries'>
+  				<a ng-href='{{entry.link}}' target='_blank'>{{entry.title}}</a>
+  			</li>
+  		</ul>
+    </div>
+  </div>
+</div>

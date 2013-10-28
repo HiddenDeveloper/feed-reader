@@ -1,0 +1,24 @@
+<div class="row toolbar">
+	<nav class="navbar navbar-inverse" role="navigation">
+		<div class="navbar-header">
+			<a class="navbar-brand" href="#">Feed Summary</a>
+		</div>
+		<div class='navbar'>
+			<ul class="nav navbar-nav">
+				<li class="active"><a href="http://mail.google.com" target='_blank'>Gmail</a></li>											
+			</ul>
+			<form class="navbar-form navbar-left" role="search" action='https://www.google.com/search' method='get' target='_blank'>
+				<div class="form-group">
+					<input type="text" name='q' class="form-control" placeholder="Search">
+				</div>
+				<button type="submit" class="btn btn-default">Submit</button>
+			</form>
+			<form class="navbar-form navbar-right">
+				<div class="form-group">
+					<input type="text" name='q' class="form-control" placeholder="Add Feed" ng-model='newFeed'>
+				</div>
+				<button type="submit" class="btn btn-default" ng-click="AddFeed();">Add Feed</button>
+			</form>
+		</div>
+	</nav>
+</div>

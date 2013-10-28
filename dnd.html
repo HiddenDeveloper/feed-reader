@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+	<style>
+	html, body {
+		width: 100%;
+		height: 100%;
+		border: none;
+		margin: 0;
+		padding: 0;
+	}
+	.CL {
+		width: 33%;
+		float: left;
+		height: 100%;
+	}
+	.CR {
+		width: 33%;
+		float: left;
+		height: 100%;
+	}
+	.CM {
+		position: relative;
+		width: 34%;
+		float: left;
+		height: 100%;
+	}
+
+	.y {
+		background-color: yellow;
+		width: 100%;
+		height: 30px;
+		margin: 3px;
+		border: 2px solid black;
+	}
+	.b {
+		background-color: blue;
+		width: 100%;
+		height: 30px;
+		margin: 3px;
+		border: 2px solid black;
+	}
+	.r {
+		background-color: red;
+		width: 100%;
+		height: 30px;
+		margin: 3px;
+		border: 2px solid black;
+	}
+
+	.dropSpacer {
+		border: 2px dashed black;
+		width: 100%;
+		height: 30px;
+	}
+	</style>
+</head>
+<body>
+	<div class='CL' ondragenter='return dragEnter(event)' ondragover='return dragOver(event)' ondrop='return dragDrop(event)' ondragLeave='return dragLeave(event)' ondragend='return dragEnd(event)'>
+		<div id='yellow' draggable='true' ondragstart='return dragStart(event)' class="y unit">
+			<div>kkkkk</div>
+		</div>
+		<div id='red' draggable='true' ondragstart='return dragStart(event)' class="r unit"></div>
+		<div id='blue' draggable='true' ondragstart='return dragStart(event)' class="b unit"></div>
+	</div>
+	<div class='CM' ondragenter='return dragEnter(event)' ondragover='return dragOver(event)' ondrop='return dragDrop(event)' ondragLeave='return dragLeave(event)' ondragend='return dragEnd(event)'></div>
+	<div class='CR' ondragenter='return dragEnter(event)' ondragover='return dragOver(event)' ondrop='return dragDrop(event)' ondragLeave='return dragLeave(event)' ondragend='return dragEnd(event)'></div>
+<script>
+
+var dropSpacer = null;
+
+function dragLeave(ev) {
+	console.log('dragleave', ev);
+}
+
+function dragEnd(ev) {
+	// dropSpacer.parentNode.removeChild(dropSpacer);
+	dropSpacer = null;
+	console.log('dragend', ev, dropSpacer);
+}
+
+function dragStart(ev) {
+	ev.dataTransfer.effectAllowed='move';
+ 	ev.dataTransfer.setData("Text", ev.target.getAttribute('id')); 
+ 	console.log('dragstart', ev.target)  
+ 	ev.dataTransfer.setDragImage(ev.target,100,30);
+   	return true;
+}
+function dragEnter(ev) {
+	var el = ev.currentTarget,
+		firstChild = el.firstChild;
+
+	if(ev.target === ev.currentTarget || ev.target.classList.contains('unit')) {
+
+		if(dropSpacer === null) {
+			dropSpacer = document.createElement('DIV');
+	        dropSpacer.className = 'dropSpacer';
+		}
+
+		console.log('dragenter', ev.target, ev.currentTarget, firstChild);
+	    
+	    if (ev.target != ev.currentTarget){
+	    	el.insertBefore(dropSpacer,ev.target);
+	    } else if(firstChild !== dropSpacer ) {
+	    	el.insertBefore(dropSpacer,firstChild);
+	    }
+
+		ev.currentTarget
+		ev.preventDefault();
+		return true;
+	}
+}
+function dragOver(ev) {
+	ev.preventDefault();
+	// console.log('dragOver', ev);
+}
+function dragDrop(ev) {
+	var data = ev.dataTransfer.getData("Text");
+	// console.log('ondrop', ev.target, ev.currentTarget);
+ 	ev.currentTarget.replaceChild(document.getElementById(data),dropSpacer);
+	ev.stopPropagation();
+   	return false;
+}
+</script>
+</body>
+</html>

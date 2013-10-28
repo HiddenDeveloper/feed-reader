@@ -1,0 +1,10 @@
+<div class="container feedreader">
+	<toolbar></toolbar>			
+	<div class="row feeds">
+		<div feedreadercolumn class="col-lg-4 feedcolumn" ng-repeat='x in [0,1,2]'>
+			<diV ng-repeat="feed in myFeeds | filter: { col: $index }  | orderBy:sortFeeds " class='dragTarget'>
+				<feed></feed>
+			</diV>
+		</div>
+	</div>	
+</div>
