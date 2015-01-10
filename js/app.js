@@ -1,6 +1,6 @@
 'use strict';
 
-var App = angular.module('RSSFeedApp', []);
+var App = angular.module('RSSFeedApp', ['firebase']);
 
 App.factory('FeedService',['$http',function($http){
     return {
@@ -42,10 +42,12 @@ App.directive("feedreader", function () {
 
     return {
 
-        controller: function($scope) {
-            
-            $scope.myFeeds = angular.fromJson(localStorage.getItem('myfeeds') || '[]');
-            // $scope.myFeeds = myFeeds;
+        controller: function($scope, $firebase) {
+
+            var ref = new Firebase('https://intense-heat-5803.firebaseio.com/myfeeds'); 
+
+            var fb = $firebase(ref);
+            $scope.myFeeds = fb.$asArray();
 
             $scope.AddFeed = function() {
                 var feed = {
@@ -54,10 +56,8 @@ App.directive("feedreader", function () {
                 };        
 
                 if($scope.newFeed !== undefined) {
-                    $scope.myFeeds.push(feed);
-                    // Using angular.toJson instead of JSON.stringify ensures that $$ variables used by angular are stripped.
-                    // Otherwise duplicate errors occur when using ng-repeat
-                    localStorage.setItem('myfeeds', angular.toJson($scope.myFeeds));
+
+                    $scope.myFeeds.$add(feed);
                 } 
 
                 $scope.newFeed = undefined; 
@@ -69,14 +69,10 @@ App.directive("feedreader", function () {
                 var index = $scope.myFeeds.indexOf( feed );                
  
                 if ( index === -1 ) {
-                    // console.log('Not Found', feed);
                     return;
                 }
 
-                $scope.myFeeds.splice( index, 1 );
-                // Using angular.toJson instead of JSON.stringify ensures that $$ variables used by angular are stripped.
-                // Otherwise duplicate errors occur when using ng-repeat
-                localStorage.setItem('myfeeds', angular.toJson($scope.myFeeds));
+                $scope.myFeeds.$remove( index );
             }
 
             $scope.handleDrop = function() {
@@ -85,8 +81,7 @@ App.directive("feedreader", function () {
 
             $scope.sortFeeds = function(feed) {
                 var idx = $scope.myFeeds.indexOf(feed);
-                // console.log('sortFeeds', feed, idx, $scope.myFeeds);
-                return idx;
+                return $scope.myFeeds[idx].idx;
             };
         },
         restrict: 'E',
@@ -102,8 +97,6 @@ App.directive('feedreadercolumn', function() {
     var i = 0;
 
     function getDraggedOverItem(limit, el, c) {
-
-        // console.log('ZZZ', el, c);
 
         if(el === limit) {
             return null;
@@ -134,8 +127,6 @@ App.directive('feedreadercolumn', function() {
                     return i;
                 }
 
-
-
             el.droppable = true;
             
             el.addEventListener(
@@ -144,50 +135,28 @@ App.directive('feedreadercolumn', function() {
 
                     var t;
 
-                    // if(e.target === e.currentTarget || e.target.classList.contains('dragTarget')) {
+                    if(dropSpacer === null) {
+                        dropSpacer = document.createElement('DIV');
+                        dropSpacer.className = 'dropSpacer';
+                    }
 
-                        // console.log('dragenter', e.target, e.currentTarget, el.childNodes.length);
-
-                        if(dropSpacer === null) {
-                            dropSpacer = document.createElement('DIV');
-                            dropSpacer.className = 'dropSpacer';
+                    if(el.querySelectorAll('.dragTarget').length === 0) {
+                        if(el.querySelector('.dropSpacer') === null) {
+                            scope.dropIndex = -1;
+                            el.appendChild(dropSpacer);
                         }
-
-                        if(el.querySelectorAll('.dragTarget').length === 0) {
-                            if(el.querySelector('.dropSpacer') === null) {
-                                // console.log('yyy', dropSpacer);
-                                scope.dropIndex = -1;
-                                el.appendChild(dropSpacer);
-                            }
-                            // el.insertBefore(dropSpacer,firstChild);
-                        } else {
-                            // t = e.target.parentNode.parentNode.parentNode;
-                            //t = el.querySelectorAll('.dragTarget');
-                            t = getDraggedOverItem(el, e.target, 'dragTarget');
-                            if(t) {
-                                if(t.previousSibling !== dropSpacer) {
-                                    scope.dropIndex = getDropIndex(t);
-                                    el.insertBefore(dropSpacer, t);
-                                }
+                    } else {
+                        t = getDraggedOverItem(el, e.target, 'dragTarget');
+                        if(t) {
+                            if(t.previousSibling !== dropSpacer) {
+                                scope.dropIndex = getDropIndex(t);
+                                el.insertBefore(dropSpacer, t);
                             }
                         }
+                    }
 
-                        // if(e.target.classList.contains('dragTarget')) {
-                        //     t = e.target.parentNode.parentNode;
-                        //     el.insertBefore(dropSpacer, t);
-                        // }
-                        
-                        // if (e.target != e.currentTarget){
-                        //     console.log('xxx', e.target.parentElement);
-                        //     //el.insertBefore(dropSpacer,e.target.parentElement);
-                        // } else if(firstChild !== dropSpacer ) {
-                        //     el.insertBefore(dropSpacer,firstChild);
-                        // }
-
-                        // e.currentTarget
-                        e.preventDefault();
-                        return true;
-                    // }
+                    e.preventDefault();
+                    return true;
                 },
                 false
             );
@@ -195,7 +164,6 @@ App.directive('feedreadercolumn', function() {
             el.addEventListener(
                 'dragover',
                 function(e) {
-                    // console.log('dragover', e.target);
                     if(e.target === dropSpacer) {
                          e.preventDefault();
                     }                   
@@ -212,43 +180,29 @@ App.directive('feedreadercolumn', function() {
                         sourceIdx = e.dataTransfer.getData("SourceIdx"),
                         sourceFeed = feeds[sourceIdx],
                         i = 0,
-                        x = 0,
+                        x = scope.dropIndex + 1,
                         l = p.myFeeds.length,
                         targetIdx = l,
                         targetFeed;
 
-                    // find the target feed
+                    // Set sourceFeed
+                    sourceFeed.idx = (scope.dropIndex === -1) ? 0 : scope.dropIndex;
+                    sourceFeed.col = scope.$index;
+                    feeds.$save(sourceFeed);
+  
+                    // update other feeds if exist
                     if(scope.dropIndex !== -1) {
                         for(i=0; i<l; i++) {
-                            if(feeds[i].col === scope.$index) {
-                                if(x++ == scope.dropIndex) {
-                                    targetFeed = feeds[i];
-                                    break;
+                            if(feeds[i].col === scope.$index) { 
+                                targetFeed = feeds[i];                          
+                                if(targetFeed !== sourceFeed && targetFeed.idx >= sourceFeed.idx ) {
+                                    targetFeed.idx = x++;
+                                    feeds.$save(targetFeed);
                                 }
                             }
                         }
-
-                        // remove original source feed
-                        sourceFeed = feeds.splice(sourceIdx, 1)[0];
-
-                        // set the source feed's feedcolumn index to the dropped in feedcolumn
-                        sourceFeed.col = scope.idx;
-
-                        // reposition source feed before target
-                        targetIdx = feeds.indexOf(targetFeed);
-                        p.myFeeds.splice(targetIdx, 0, sourceFeed)
                     }
 
-                    // set the source feed's feedcolumn index to the dropped in feedcolumn
-                    sourceFeed.col = scope.idx;
-                                
-
-                    localStorage.setItem('myfeeds', angular.toJson(p.myFeeds));
-                    p.$parent.myFeeds = angular.fromJson(localStorage.getItem('myfeeds') || '[]');
-                    p.$parent.$apply();
-
-
-                    // console.log('drop', sourceIdx);
                     e.stopPropagation();
                     return false;
                 },
@@ -274,7 +228,6 @@ App.directive("feed", function () {
         transclude: false,
         controller :  function($scope, FeedService) {
             FeedService.parseFeed($scope.feed.feedsrc).then(function(res){
-                // console.log(res.data);
                 if(res.data.responseStatus === 200) {
                     $scope.feeddata = res.data.responseData.feed;
                 } else {
@@ -302,7 +255,6 @@ App.directive("feed", function () {
 
                     e.dataTransfer.effectAllowed='move';
                     e.dataTransfer.setData("SourceIdx", idx); 
-                    // console.log('dragstart', e.target)  
                     e.dataTransfer.setDragImage(e.target,100,30);
                     return true;
                 },
@@ -316,7 +268,6 @@ App.directive("feed", function () {
                         dropSpacer.parentNode.removeChild(dropSpacer);
                         dropSpacer = null;
                     }
-                    // console.log('dragend', e);
                 },
                 false
             );
